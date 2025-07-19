@@ -18,34 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdint.h>
-
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #include <string.h>
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "esp_log.h"
-#else
-#include "ff_gen_drv.h"
-#endif
 
 #include "config.h"
 
-#define CONFIG_FILE_NAME				"config"
-#define CONFIG_FILE_SIZE				12
-#define CONFIG_FILE_MAGIC				"TLCF"
-#define CONFIG_FILE_VERSION				1
-
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #define TAG "config"
 #define NVS_NAMESPACE "tamagotchi"
-#else
-static uint8_t config_buf[CONFIG_FILE_SIZE];
-#endif
-
 
 void config_save(config_t *cfg)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 	nvs_handle_t nvs_handle;
 	esp_err_t err;
 
@@ -66,64 +50,10 @@ void config_save(config_t *cfg)
 	}
 
 	nvs_close(nvs_handle);
-#else
-	FIL f;
-	UINT num;
-	uint8_t *ptr = config_buf;
-#endif
-
-#ifndef ESP32
-	/* First the magic, then the version, and finally the fields of
-	 * the config_t struct written as u8 following the struct order
-	 */
-	ptr[0] = (uint8_t) CONFIG_FILE_MAGIC[0];
-	ptr[1] = (uint8_t) CONFIG_FILE_MAGIC[1];
-	ptr[2] = (uint8_t) CONFIG_FILE_MAGIC[2];
-	ptr[3] = (uint8_t) CONFIG_FILE_MAGIC[3];
-	ptr += 4;
-
-	ptr[0] = CONFIG_FILE_VERSION & 0xFF;
-	ptr += 1;
-
-	ptr[0] = cfg->lcd_inverted & 0x1;
-	ptr += 1;
-
-	ptr[0] = cfg->backlight_always_on & 0x1;
-	ptr += 1;
-
-	ptr[0] = cfg->backlight_level & 0x1F;
-	ptr += 1;
-
-	ptr[0] = cfg->speaker_enabled & 0x1;
-	ptr += 1;
-
-	ptr[0] = cfg->led_enabled & 0x1;
-	ptr += 1;
-
-	ptr[0] = cfg->battery_enabled & 0x1;
-	ptr += 1;
-
-	ptr[0] = cfg->autosave_enabled & 0x1;
-	ptr += 1;
-
-	if (f_open(&f, CONFIG_FILE_NAME, FA_CREATE_ALWAYS | FA_WRITE)) {
-		/* Error */
-		return;
-	}
-
-        if (f_write(&f, config_buf, sizeof(config_buf), &num) || (num < sizeof(config_buf))) {
-		/* Error */
-		f_close(&f);
-		return;
-	}
-
-	f_close(&f);
-#endif
 }
 
 int8_t config_load(config_t *cfg)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 	nvs_handle_t nvs_handle;
 	esp_err_t err;
 	size_t required_size = sizeof(config_t);
@@ -138,65 +68,9 @@ int8_t config_load(config_t *cfg)
 	nvs_close(nvs_handle);
 
 	if (err != ESP_OK || required_size != sizeof(config_t)) {
-		ESP_LOGW(TAG, "Config not found in NVS, using defaults");
+		ESP_LOGE(TAG, "Failed to load config from NVS");
 		return -1;
 	}
 
 	return 0;
-#else
-	FIL f;
-	UINT num;
-	uint8_t *ptr = config_buf;
-
-	if (f_open(&f, CONFIG_FILE_NAME, FA_OPEN_EXISTING | FA_READ)) {
-		/* Error */
-		return -1;
-	}
-
-	if (f_read(&f, config_buf, sizeof(config_buf), &num) || (num < sizeof(config_buf))) {
-		/* Error */
-		f_close(&f);
-		return -1;
-	}
-
-	f_close(&f);
-
-	/* First the magic, then the version, and finally the fields of
-	 * the config_t struct written as u8 following the struct order
-	 */
-	if (ptr[0] != (uint8_t) CONFIG_FILE_MAGIC[0] || ptr[1] != (uint8_t) CONFIG_FILE_MAGIC[1] ||
-		ptr[2] != (uint8_t) CONFIG_FILE_MAGIC[2] || ptr[3] != (uint8_t) CONFIG_FILE_MAGIC[3]) {
-		return -1;
-	}
-	ptr += 4;
-
-	if (ptr[0] != CONFIG_FILE_VERSION) {
-		/* TODO: Handle migration at a point */
-		return -1;
-	}
-	ptr += 1;
-
-	cfg->lcd_inverted = ptr[0] & 0x1;
-	ptr += 1;
-
-	cfg->backlight_always_on = ptr[0] & 0x1;
-	ptr += 1;
-
-	cfg->backlight_level = ptr[0] & 0x1F;
-	ptr += 1;
-
-	cfg->speaker_enabled = ptr[0] & 0x1;
-	ptr += 1;
-
-	cfg->led_enabled = ptr[0] & 0x1;
-	ptr += 1;
-
-	cfg->battery_enabled = ptr[0] & 0x1;
-	ptr += 1;
-
-	cfg->autosave_enabled = ptr[0] & 0x1;
-	ptr += 1;
-
-	return 0;
-#endif
 }

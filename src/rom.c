@@ -18,15 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdint.h>
-
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #include <stdio.h>
 #include <string.h>
 #include "esp_spiffs.h"
 #include "esp_log.h"
-#else
-#include "ff_gen_drv.h"
-#endif
 
 #include "storage.h"
 #include "rom.h"
@@ -47,7 +42,6 @@ static __attribute__((used, section(".rom"))) const u12_t g_program[];
 #define RESET_VECTOR_ADDR_U12				0x100
 #define RESET_VECTOR_ADDR_U8				(RESET_VECTOR_ADDR_U12 * sizeof(u12_t))
 
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #define TAG "rom"
 static char rom_file_name[] = "/spiffs/romX.bin";
 #else
@@ -57,7 +51,6 @@ static char rom_file_name[] = "romX.bin";
 
 int8_t rom_load(uint8_t slot)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 	FILE *f;
 	uint32_t size;
 	uint32_t i = 0;
@@ -102,7 +95,6 @@ int8_t rom_load(uint8_t slot)
 #endif
 
 	while (i < size) {
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 		if (fread(buf, 1, 2, f) != 2) {
 			ESP_LOGE(TAG, "Failed to read ROM data");
 			fclose(f);
@@ -124,7 +116,6 @@ int8_t rom_load(uint8_t slot)
 			/* Flash the page */
 			if (storage_write(STORAGE_ROM_OFFSET + ((i - 1)/PAGE_SIZE_U12) * STORAGE_PAGE_SIZE, (uint32_t *) steps, ((((i - 1) % PAGE_SIZE_U12) + 1) * sizeof(u12_t) + sizeof(uint32_t) - 1)/sizeof(uint32_t)) < 0) {
 				/* Error */
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 				fclose(f);
 #else
 				f_close(&f);
@@ -134,7 +125,6 @@ int8_t rom_load(uint8_t slot)
 		}
 	}
 
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 	fclose(f);
 #else
 	f_close(&f);
@@ -149,7 +139,6 @@ uint8_t rom_stat(uint8_t slot)
 		return 0;
 	}
 
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 	rom_file_name[13] = slot + '0';
 	FILE *f = fopen(rom_file_name, "rb");
 	if (f) {
