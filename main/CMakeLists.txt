@@ -23,5 +23,4 @@ idf_component_register(SRCS "esp32_main.c"
                     INCLUDE_DIRS "../src"
                                  "../src/mcu/inc"
                                  "../src/mcu/esp32"
-                                 "../libs/TamaLIB"
-                    REQUIRES spiffs nvs_flash esp_adc_cal tinyusb tamalib)
+                    REQUIRES spiffs nvs_flash esp_adc tamalib)

@@ -18,8 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdint.h>
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -34,10 +35,11 @@
 #define DEFAULT_VREF					1100
 #define NO_OF_SAMPLES					64
 
-static esp_adc_cal_characteristics_t *adc_chars;
+static adc_oneshot_unit_handle_t adc1_handle;
+static adc_cali_handle_t adc1_cali_handle;
 static adc_channel_t channel = BOARD_VBATT_ANA_ADC_CHANNEL;
 static adc_atten_t atten = ADC_ATTEN_DB_11;
-static adc_unit_t unit = ADC_UNIT_1;
+static bool adc_calibration_init = false;
 
 static void (*battery_cb)(uint16_t) = NULL;
 static job_t battery_processing_job;
@@ -48,18 +50,38 @@ static uint32_t adc_readings[ADC_DATA_SIZE];
 
 static void adc_init(void)
 {
-	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(channel, atten);
+	// ADC1 Init
+	adc_oneshot_unit_init_cfg_t init_config1 = {
+		.unit_id = ADC_UNIT_1,
+	};
+	ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
-	adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-	esp_adc_cal_value_t val_type = esp_adc_cal_characterize(unit, atten, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars);
+	// ADC1 config
+	adc_oneshot_chan_cfg_t config = {
+		.bitwidth = ADC_BITWIDTH_12,
+		.atten = atten,
+	};
+	ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, channel, &config));
+
+	// ADC1 Calibration Init
+	adc_cali_curve_fitting_config_t cali_config = {
+		.unit_id = ADC_UNIT_1,
+		.atten = atten,
+		.bitwidth = ADC_BITWIDTH_12,
+	};
+	ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&cali_config, &adc1_cali_handle));
+	adc_calibration_init = true;
 }
 
 static void adc_deinit(void)
 {
-	if (adc_chars) {
-		free(adc_chars);
-		adc_chars = NULL;
+	if (adc_calibration_init) {
+		ESP_ERROR_CHECK(adc_cali_delete_scheme_curve_fitting(adc1_cali_handle));
+		adc_calibration_init = false;
+	}
+	if (adc1_handle) {
+		ESP_ERROR_CHECK(adc_oneshot_del_unit(adc1_handle));
+		adc1_handle = NULL;
 	}
 }
 
@@ -86,10 +108,14 @@ void battery_start_meas(void)
 	for (int i = 0; i < ADC_DATA_SIZE; i++) {
 		uint32_t adc_reading = 0;
 		for (int j = 0; j < NO_OF_SAMPLES; j++) {
-			adc_reading += adc1_get_raw((adc1_channel_t)channel);
+			int raw_value;
+			ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, channel, &raw_value));
+			adc_reading += raw_value;
 		}
 		adc_reading /= NO_OF_SAMPLES;
-		adc_readings[i] = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+		int voltage;
+		ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_handle, adc_reading, &voltage));
+		adc_readings[i] = voltage;
 	}
 
 	job_schedule(&battery_processing_job, &battery_processing_job_fn, JOB_ASAP);
