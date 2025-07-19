@@ -150,7 +150,7 @@ void input_register_handler(void (*handler)(input_t, input_state_t, uint8_t))
 
 static void long_press_job_fn(job_t *job)
 {
-	input_t input;
+	input_t input = INPUT_NUM;
 
 	for (int i = 0; i < INPUT_NUM; i++) {
 		if (job == &(inputs[i].long_press_job)) {
@@ -166,7 +166,7 @@ static void long_press_job_fn(job_t *job)
 
 static void debounce_job_fn(job_t *job)
 {
-	input_t input;
+	input_t input = INPUT_NUM;
 
 	for (int i = 0; i < INPUT_NUM; i++) {
 		if (job == &(inputs[i].debounce_job)) {

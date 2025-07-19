@@ -25,9 +25,9 @@
 #include "mcu_types.h"
 
 
-void gpio_set(gpio_port_t port, gpio_pin_t pin);
-void gpio_clear(gpio_port_t port, gpio_pin_t pin);
+void gpio_set(mcu_gpio_port_t port, gpio_pin_t pin);
+void gpio_clear(mcu_gpio_port_t port, gpio_pin_t pin);
 
-uint8_t gpio_get(gpio_port_t port, gpio_pin_t pin);
+uint8_t gpio_get(mcu_gpio_port_t port, gpio_pin_t pin);
 
 #endif /* _GPIO_H_ */

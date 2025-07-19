@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-typedef uint8_t gpio_port_t;
+typedef uint8_t mcu_gpio_port_t;
 typedef uint8_t gpio_pin_t;
 
 #endif /* _MCU_TYPES_H_ */

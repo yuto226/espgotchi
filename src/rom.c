@@ -56,10 +56,6 @@ int8_t rom_load(uint8_t slot)
 
 	rom_file_name[11] = slot + '0';
 
-	if (storage_mount() < 0) {
-		ESP_LOGE(TAG, "Failed to mount storage");
-		return -1;
-	}
 
 #ifdef ROM_BUILT_IN
 	if (slot != 0) {

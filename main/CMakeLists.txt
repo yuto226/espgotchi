@@ -23,5 +23,5 @@ idf_component_register(SRCS "esp32_main.c"
                     INCLUDE_DIRS "../src"
                                  "../src/mcu/inc"
                                  "../src/mcu/esp32"
-                    REQUIRES spiffs nvs_flash esp_adc tamalib
+                    REQUIRES spiffs nvs_flash esp_adc tamalib esp_timer
                              esp_driver_gpio esp_driver_ledc esp_driver_spi)

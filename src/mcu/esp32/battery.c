@@ -38,7 +38,7 @@
 static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc1_cali_handle;
 static adc_channel_t channel = BOARD_VBATT_ANA_ADC_CHANNEL;
-static adc_atten_t atten = ADC_ATTEN_DB_11;
+static adc_atten_t atten = ADC_ATTEN_DB_12;
 static bool adc_calibration_init = false;
 
 static void (*battery_cb)(uint16_t) = NULL;
@@ -47,6 +47,8 @@ static uint8_t measurement_ongoing = 0;
 static uint8_t state_lock = 0;
 
 static uint32_t adc_readings[ADC_DATA_SIZE];
+
+static void battery_processing_job_fn(job_t *job);
 
 static void adc_init(void)
 {
@@ -64,19 +66,19 @@ static void adc_init(void)
 	ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, channel, &config));
 
 	// ADC1 Calibration Init
-	adc_cali_curve_fitting_config_t cali_config = {
+	adc_cali_line_fitting_config_t cali_config = {
 		.unit_id = ADC_UNIT_1,
 		.atten = atten,
 		.bitwidth = ADC_BITWIDTH_12,
 	};
-	ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&cali_config, &adc1_cali_handle));
+	ESP_ERROR_CHECK(adc_cali_create_scheme_line_fitting(&cali_config, &adc1_cali_handle));
 	adc_calibration_init = true;
 }
 
 static void adc_deinit(void)
 {
 	if (adc_calibration_init) {
-		ESP_ERROR_CHECK(adc_cali_delete_scheme_curve_fitting(adc1_cali_handle));
+		ESP_ERROR_CHECK(adc_cali_delete_scheme_line_fitting(adc1_cali_handle));
 		adc_calibration_init = false;
 	}
 	if (adc1_handle) {

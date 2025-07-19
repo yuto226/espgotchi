@@ -862,7 +862,7 @@ static void menu_roms(uint8_t pos, menu_parent_t *parent)
 
 static char * menu_roms_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (rom_stat(pos)) {
+	switch (rom_is_slot_valid(pos)) {
 		default:
 		case 0:
 			return " ";

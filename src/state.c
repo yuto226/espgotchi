@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdint.h>
+#include <unistd.h>
 #include "fatfs_compat.h"
 
 #include "tamalib.h"
@@ -93,10 +94,10 @@ void state_save(uint8_t slot)
 	ptr[3] = (*(state->tick_counter) >> 24) & 0xFF;
 	ptr += 4;
 
-	ptr[0] = *(state->clk_timer_timestamp) & 0xFF;
-	ptr[1] = (*(state->clk_timer_timestamp) >> 8) & 0xFF;
-	ptr[2] = (*(state->clk_timer_timestamp) >> 16) & 0xFF;
-	ptr[3] = (*(state->clk_timer_timestamp) >> 24) & 0xFF;
+	ptr[0] = *(state->clk_timer_2hz_timestamp) & 0xFF;
+	ptr[1] = (*(state->clk_timer_2hz_timestamp) >> 8) & 0xFF;
+	ptr[2] = (*(state->clk_timer_2hz_timestamp) >> 16) & 0xFF;
+	ptr[3] = (*(state->clk_timer_2hz_timestamp) >> 24) & 0xFF;
 	ptr += 4;
 
 	ptr[0] = *(state->prog_timer_timestamp) & 0xFF;
@@ -231,7 +232,7 @@ void state_load(uint8_t slot)
 	*(state->tick_counter) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
 	ptr += 4;
 
-	*(state->clk_timer_timestamp) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
+	*(state->clk_timer_2hz_timestamp) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
 	ptr += 4;
 
 	*(state->prog_timer_timestamp) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
@@ -283,7 +284,7 @@ void state_erase(uint8_t slot)
 
 	state_file_name[4] = slot + '0';
 
-	f_unlink(state_file_name);
+	unlink(state_file_name);
 }
 
 uint8_t state_stat(uint8_t slot)
