@@ -17,22 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _BOARD_H_
-#define _BOARD_H_
+#ifndef _FS_LL_H_
+#define _FS_LL_H_
 
-/* All supported board must be listed here */
-#if defined(BOARD_IS_discovery_stm32f0)
-#include "board_discovery_stm32f0.h"
-#elif defined(BOARD_IS_opentama)
-#include "board_opentama.h"
-#elif defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
-#include "board_esp32.h"
-#else
-#error "No board selected"
-#endif
+void fs_ll_init(void);
 
+int8_t fs_ll_mount(void);
+int8_t fs_ll_umount(void);
 
-void board_init(void);
-void board_init_irq(void);
-
-#endif /* _BOARD_H_ */
+#endif /* _FS_LL_H_ */

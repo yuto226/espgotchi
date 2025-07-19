@@ -41,7 +41,7 @@
 #include "uc1701x.h"
 #endif
 
-#include "lib/tamalib.h"
+#include "tamalib.h"
 
 #define FIRMWARE_VERSION				"v0.1"
 

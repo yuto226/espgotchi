@@ -19,9 +19,13 @@
  */
 #include <stdint.h>
 
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
+#include "fatfs_compat.h"
+#else
 #include "ff_gen_drv.h"
+#endif
 
-#include "lib/tamalib.h"
+#include "tamalib.h"
 #include "state.h"
 
 #define STATE_SLOT_SIZE					821 // in bytes

@@ -17,22 +17,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _BOARD_H_
-#define _BOARD_H_
+#ifndef _HAL_TYPES_H_
+#define _HAL_TYPES_H_
 
-/* All supported board must be listed here */
-#if defined(BOARD_IS_discovery_stm32f0)
-#include "board_discovery_stm32f0.h"
-#elif defined(BOARD_IS_opentama)
-#include "board_opentama.h"
-#elif defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
-#include "board_esp32.h"
-#else
-#error "No board selected"
-#endif
+#include <stdint.h>
 
+typedef uint8_t bool_t;
+typedef uint8_t u4_t;
+typedef uint8_t u5_t;
+typedef uint8_t u8_t;
+typedef uint16_t u12_t;
+typedef uint16_t u13_t;
+typedef uint32_t u32_t;
+typedef uint32_t timestamp_t; // WARNING: Must be an unsigned type to properly handle wrapping (u32 wraps in around 1h11m)
 
-void board_init(void);
-void board_init_irq(void);
-
-#endif /* _BOARD_H_ */
+#endif /* _HAL_TYPES_H_ */

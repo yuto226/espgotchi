@@ -1,5 +1,5 @@
 /*
- * MCUGotchi - A Tamagotchi P1 emulator for microcontrollers
+ * TamaLIB - A hardware agnostic first-gen Tamagotchi emulation library
  *
  * Copyright (C) 2021 Jean-Christophe Rona <jc@rona.fr>
  *
@@ -17,22 +17,36 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _BOARD_H_
-#define _BOARD_H_
+#ifndef _HW_H_
+#define _HW_H_
 
-/* All supported board must be listed here */
-#if defined(BOARD_IS_discovery_stm32f0)
-#include "board_discovery_stm32f0.h"
-#elif defined(BOARD_IS_opentama)
-#include "board_opentama.h"
-#elif defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
-#include "board_esp32.h"
-#else
-#error "No board selected"
-#endif
+#include "hal.h"
+
+#define LCD_WIDTH			32
+#define LCD_HEIGHT			16
+
+#define ICON_NUM			8
+
+typedef enum {
+	BTN_STATE_RELEASED = 0,
+	BTN_STATE_PRESSED,
+} btn_state_t;
+
+typedef enum {
+	BTN_LEFT = 0,
+	BTN_MIDDLE,
+	BTN_RIGHT,
+	BTN_TAP,
+} button_t;
 
 
-void board_init(void);
-void board_init_irq(void);
+bool_t hw_init(void);
+void hw_release(void);
 
-#endif /* _BOARD_H_ */
+void hw_set_lcd_pin(u8_t seg, u8_t com, u8_t val);
+void hw_set_button(button_t btn, btn_state_t state);
+
+void hw_set_buzzer_freq(u4_t freq);
+void hw_enable_buzzer(bool_t en);
+
+#endif /* _HW_H_ */

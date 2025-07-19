@@ -19,7 +19,7 @@
  */
 #include <stdint.h>
 
-#ifdef ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #include <string.h>
 #include "nvs_flash.h"
 #include "nvs.h"
@@ -35,7 +35,7 @@
 #define CONFIG_FILE_MAGIC				"TLCF"
 #define CONFIG_FILE_VERSION				1
 
-#ifdef ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #define TAG "config"
 #define NVS_NAMESPACE "tamagotchi"
 #else
@@ -45,7 +45,7 @@ static uint8_t config_buf[CONFIG_FILE_SIZE];
 
 void config_save(config_t *cfg)
 {
-#ifdef ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 	nvs_handle_t nvs_handle;
 	esp_err_t err;
 
@@ -123,7 +123,7 @@ void config_save(config_t *cfg)
 
 int8_t config_load(config_t *cfg)
 {
-#ifdef ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 	nvs_handle_t nvs_handle;
 	esp_err_t err;
 	size_t required_size = sizeof(config_t);

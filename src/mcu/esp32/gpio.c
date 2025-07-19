@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdint.h>
-#include "driver/gpio.h"
+#include "esp_driver_gpio.h"
 
 #include "mcu_types.h"
 #include "gpio.h"
