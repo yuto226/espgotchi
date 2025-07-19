@@ -44,27 +44,46 @@ static __attribute__((used, section(".rom"))) const u12_t g_program[];
 
 #define TAG "rom"
 static char rom_file_name[] = "/spiffs/romX.bin";
-#else
-static char rom_file_name[] = "romX.bin";
-#endif
 
 
 int8_t rom_load(uint8_t slot)
 {
 	FILE *f;
-	uint32_t size;
-	uint32_t i = 0;
-	uint8_t buf[2];
 	u12_t steps[PAGE_SIZE_U12];
+	uint8_t buf[2];
+	uint32_t i = 0;
+	uint32_t size;
 
-	if (slot >= ROM_SLOTS_NUM) {
+	rom_file_name[11] = slot + '0';
+
+	if (storage_mount() < 0) {
+		ESP_LOGE(TAG, "Failed to mount storage");
 		return -1;
 	}
 
-	rom_file_name[13] = slot + '0';
+#ifdef ROM_BUILT_IN
+	if (slot != 0) {
+		ESP_LOGE(TAG, "Built-in ROM can only be loaded to slot 0");
+		return -1;
+	}
 
+	size = sizeof(g_program) / sizeof(u12_t);
+	i = 0;
+	
+	while (i < size) {
+		steps[i % PAGE_SIZE_U12] = g_program[i];
+		i++;
+
+		if ((i % PAGE_SIZE_U12) == 0 || i == size) {
+			if (storage_write(STORAGE_ROM_OFFSET + ((i - 1)/PAGE_SIZE_U12) * STORAGE_PAGE_SIZE, (uint32_t *) steps, ((((i - 1) % PAGE_SIZE_U12) + 1) * sizeof(u12_t) + sizeof(uint32_t) - 1)/sizeof(uint32_t)) < 0) {
+				ESP_LOGE(TAG, "Failed to write ROM data to storage");
+				return -1;
+			}
+		}
+	}
+#else
 	f = fopen(rom_file_name, "rb");
-	if (f == NULL) {
+	if (!f) {
 		ESP_LOGE(TAG, "Failed to open ROM file: %s", rom_file_name);
 		return -1;
 	}
@@ -72,27 +91,6 @@ int8_t rom_load(uint8_t slot)
 	fseek(f, 0, SEEK_END);
 	size = ftell(f) / 2;
 	fseek(f, 0, SEEK_SET);
-#else
-	FIL f;
-	UINT num;
-	uint32_t size;
-	uint32_t i = 0;
-	uint8_t buf[2];
-	u12_t steps[PAGE_SIZE_U12];
-
-	if (slot >= ROM_SLOTS_NUM) {
-		return -1;
-	}
-
-	rom_file_name[3] = slot + '0';
-
-	if (f_open(&f, rom_file_name, FA_OPEN_EXISTING | FA_READ)) {
-		/* Error */
-		return -1;
-	}
-
-	size = f_size(&f)/2;
-#endif
 
 	while (i < size) {
 		if (fread(buf, 1, 2, f) != 2) {
@@ -100,57 +98,41 @@ int8_t rom_load(uint8_t slot)
 			fclose(f);
 			return -1;
 		}
-#else
-		if (f_read(&f, buf, 2, &num) || (num < 2)) {
-			/* Error */
-			f_close(&f);
-			return -1;
-		}
-#endif
 
 		steps[i % PAGE_SIZE_U12] = buf[1] | ((buf[0] & 0xF) << 8);
-
 		i++;
 
 		if ((i % PAGE_SIZE_U12) == 0 || i == size) {
-			/* Flash the page */
 			if (storage_write(STORAGE_ROM_OFFSET + ((i - 1)/PAGE_SIZE_U12) * STORAGE_PAGE_SIZE, (uint32_t *) steps, ((((i - 1) % PAGE_SIZE_U12) + 1) * sizeof(u12_t) + sizeof(uint32_t) - 1)/sizeof(uint32_t)) < 0) {
-				/* Error */
+				ESP_LOGE(TAG, "Failed to write ROM data to storage");
 				fclose(f);
-#else
-				f_close(&f);
-#endif
 				return -1;
 			}
 		}
 	}
 
 	fclose(f);
-#else
-	f_close(&f);
 #endif
 
 	return 0;
 }
 
-uint8_t rom_stat(uint8_t slot)
+int8_t rom_unload(uint8_t slot)
 {
-	if (slot >= ROM_SLOTS_NUM) {
-		return 0;
-	}
+	(void) slot;
+	return 0;
+}
 
-	rom_file_name[13] = slot + '0';
+uint8_t rom_is_slot_valid(uint8_t slot)
+{
+	rom_file_name[11] = slot + '0';
+	
 	FILE *f = fopen(rom_file_name, "rb");
 	if (f) {
 		fclose(f);
 		return 1;
 	}
 	return 0;
-#else
-	rom_file_name[3] = slot + '0';
-	/* Check if the slot exists */
-	return (f_stat(rom_file_name, NULL) == FR_OK);
-#endif
 }
 
 uint8_t rom_is_loaded(void)

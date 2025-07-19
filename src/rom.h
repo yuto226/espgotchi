@@ -27,7 +27,8 @@
 
 
 int8_t rom_load(uint8_t slot);
-uint8_t rom_stat(uint8_t slot);
+int8_t rom_unload(uint8_t slot);
+uint8_t rom_is_slot_valid(uint8_t slot);
 uint8_t rom_is_loaded(void);
 
 #endif /* _ROM_H_ */
