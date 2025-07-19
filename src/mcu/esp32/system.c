@@ -22,8 +22,11 @@
 #include "esp_pm.h"
 #include "esp_sleep.h"
 #include "esp_system.h"
+#include "driver/gpio.h"
+#include "esp_intr_alloc.h"
 
 #include "system.h"
+#include "board.h"
 
 static uint8_t state_lock_counters[STATE_NUM] = {0};
 
@@ -116,4 +119,92 @@ void system_reset(void)
 void system_dfu_reset(void)
 {
 	esp_restart();
+}
+
+static void IRAM_ATTR gpio_isr_handler(void* arg) {
+    uint32_t gpio_num = (uint32_t)arg;
+    // ISR処理（必要に応じて実装）
+}
+
+void board_init(void)
+{
+    // ESP32 GPIO初期化
+    
+    /* Buttons - 基本的なGPIO設定（割り込みはboard_init_irqで設定） */
+    gpio_set_direction(BOARD_LEFT_BTN_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_LEFT_BTN_PIN, GPIO_PULLUP_ONLY);  // ESP32では通常プルアップ
+    
+    gpio_set_direction(BOARD_MIDDLE_BTN_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_MIDDLE_BTN_PIN, GPIO_FLOATING);   // プルなし
+    
+    gpio_set_direction(BOARD_RIGHT_BTN_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_RIGHT_BTN_PIN, GPIO_PULLUP_ONLY);
+    
+    /* Screen control pins */
+    gpio_set_direction(BOARD_SCREEN_DC_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_SCREEN_DC_PIN, 1);  // 初期値HIGH
+    
+    gpio_set_direction(BOARD_SCREEN_NSS_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_SCREEN_NSS_PIN, 1);  // SPI CS初期値HIGH
+    
+    gpio_set_direction(BOARD_SCREEN_RST_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_SCREEN_RST_PIN, 1);  // リセット初期値HIGH
+    
+    /* RGB LED pins - これらはLEDCで制御されるため出力モードに設定 */
+    gpio_set_direction(BOARD_LED_RED_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_LED_RED_PIN, 0);
+    
+    gpio_set_direction(BOARD_LED_GREEN_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_LED_GREEN_PIN, 0);
+    
+    gpio_set_direction(BOARD_LED_BLUE_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_LED_BLUE_PIN, 0);
+    
+    /* Speaker pin */
+    gpio_set_direction(BOARD_SPEAKER_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_SPEAKER_PIN, 0);
+    
+    /* Battery voltage measurement pin - アナログ入力 */
+    gpio_set_direction(BOARD_VBATT_ANA_PIN, GPIO_MODE_DISABLE);  // アナログモード
+    gpio_set_pull_mode(BOARD_VBATT_ANA_PIN, GPIO_FLOATING);
+    
+    /* USB pins - 入力モード */
+    gpio_set_direction(BOARD_USB_DP_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_USB_DP_PIN, GPIO_FLOATING);
+    
+    gpio_set_direction(BOARD_USB_DM_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_USB_DM_PIN, GPIO_FLOATING);
+    
+    // 注意: SPIピン（SCLK, MOSI）はSPIドライバが管理するため、ここでは設定しない
+    // 注意: バックライトピンはLEDCドライバが管理するため、ここでは設定しない
+}
+
+void board_init_irq(void)
+{
+    // 割り込みサービスをインストール
+    gpio_install_isr_service(0);
+
+    // --- ボタン GPIO (既存のピン定義を使用) ---
+    gpio_set_direction(BOARD_LEFT_BTN_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_LEFT_BTN_PIN, GPIO_PULLUP_ONLY);
+    gpio_set_intr_type(BOARD_LEFT_BTN_PIN, GPIO_INTR_NEGEDGE);
+    gpio_isr_handler_add(BOARD_LEFT_BTN_PIN, gpio_isr_handler, (void*)BOARD_LEFT_BTN_PIN);
+
+    gpio_set_direction(BOARD_MIDDLE_BTN_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_MIDDLE_BTN_PIN, GPIO_PULLUP_ONLY);
+    gpio_set_intr_type(BOARD_MIDDLE_BTN_PIN, GPIO_INTR_NEGEDGE);
+    gpio_isr_handler_add(BOARD_MIDDLE_BTN_PIN, gpio_isr_handler, (void*)BOARD_MIDDLE_BTN_PIN);
+
+    gpio_set_direction(BOARD_RIGHT_BTN_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOARD_RIGHT_BTN_PIN, GPIO_PULLUP_ONLY);
+    gpio_set_intr_type(BOARD_RIGHT_BTN_PIN, GPIO_INTR_NEGEDGE);
+    gpio_isr_handler_add(BOARD_RIGHT_BTN_PIN, gpio_isr_handler, (void*)BOARD_RIGHT_BTN_PIN);
+
+    // --- USB検出用GPIO (適切なピンが定義されていればUSB関連も追加可能) ---
+    // 今回はVBUSピンが明確でないため一時的にコメントアウト
+    /*
+    gpio_set_direction(VBUS_GPIO, GPIO_MODE_INPUT);
+    gpio_set_intr_type(VBUS_GPIO, GPIO_INTR_ANYEDGE);
+    gpio_isr_handler_add(VBUS_GPIO, gpio_isr_handler, (void*)VBUS_GPIO);
+    */
 }
