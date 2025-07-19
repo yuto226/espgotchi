@@ -19,7 +19,14 @@
  */
 #include <stdint.h>
 
+#ifdef ESP32
+#include <stdio.h>
+#include <string.h>
+#include "esp_spiffs.h"
+#include "esp_log.h"
+#else
 #include "ff_gen_drv.h"
+#endif
 
 #include "storage.h"
 #include "rom.h"
@@ -40,11 +47,39 @@ static __attribute__((used, section(".rom"))) const u12_t g_program[];
 #define RESET_VECTOR_ADDR_U12				0x100
 #define RESET_VECTOR_ADDR_U8				(RESET_VECTOR_ADDR_U12 * sizeof(u12_t))
 
+#ifdef ESP32
+#define TAG "rom"
+static char rom_file_name[] = "/spiffs/romX.bin";
+#else
 static char rom_file_name[] = "romX.bin";
+#endif
 
 
 int8_t rom_load(uint8_t slot)
 {
+#ifdef ESP32
+	FILE *f;
+	uint32_t size;
+	uint32_t i = 0;
+	uint8_t buf[2];
+	u12_t steps[PAGE_SIZE_U12];
+
+	if (slot >= ROM_SLOTS_NUM) {
+		return -1;
+	}
+
+	rom_file_name[13] = slot + '0';
+
+	f = fopen(rom_file_name, "rb");
+	if (f == NULL) {
+		ESP_LOGE(TAG, "Failed to open ROM file: %s", rom_file_name);
+		return -1;
+	}
+
+	fseek(f, 0, SEEK_END);
+	size = ftell(f) / 2;
+	fseek(f, 0, SEEK_SET);
+#else
 	FIL f;
 	UINT num;
 	uint32_t size;
@@ -64,13 +99,22 @@ int8_t rom_load(uint8_t slot)
 	}
 
 	size = f_size(&f)/2;
+#endif
 
 	while (i < size) {
+#ifdef ESP32
+		if (fread(buf, 1, 2, f) != 2) {
+			ESP_LOGE(TAG, "Failed to read ROM data");
+			fclose(f);
+			return -1;
+		}
+#else
 		if (f_read(&f, buf, 2, &num) || (num < 2)) {
 			/* Error */
 			f_close(&f);
 			return -1;
 		}
+#endif
 
 		steps[i % PAGE_SIZE_U12] = buf[1] | ((buf[0] & 0xF) << 8);
 
@@ -80,13 +124,21 @@ int8_t rom_load(uint8_t slot)
 			/* Flash the page */
 			if (storage_write(STORAGE_ROM_OFFSET + ((i - 1)/PAGE_SIZE_U12) * STORAGE_PAGE_SIZE, (uint32_t *) steps, ((((i - 1) % PAGE_SIZE_U12) + 1) * sizeof(u12_t) + sizeof(uint32_t) - 1)/sizeof(uint32_t)) < 0) {
 				/* Error */
+#ifdef ESP32
+				fclose(f);
+#else
 				f_close(&f);
+#endif
 				return -1;
 			}
 		}
 	}
 
+#ifdef ESP32
+	fclose(f);
+#else
 	f_close(&f);
+#endif
 
 	return 0;
 }
@@ -97,10 +149,19 @@ uint8_t rom_stat(uint8_t slot)
 		return 0;
 	}
 
+#ifdef ESP32
+	rom_file_name[13] = slot + '0';
+	FILE *f = fopen(rom_file_name, "rb");
+	if (f) {
+		fclose(f);
+		return 1;
+	}
+	return 0;
+#else
 	rom_file_name[3] = slot + '0';
-
 	/* Check if the slot exists */
 	return (f_stat(rom_file_name, NULL) == FR_OK);
+#endif
 }
 
 uint8_t rom_is_loaded(void)

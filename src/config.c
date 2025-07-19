@@ -19,7 +19,14 @@
  */
 #include <stdint.h>
 
+#ifdef ESP32
+#include <string.h>
+#include "nvs_flash.h"
+#include "nvs.h"
+#include "esp_log.h"
+#else
 #include "ff_gen_drv.h"
+#endif
 
 #include "config.h"
 
@@ -28,15 +35,44 @@
 #define CONFIG_FILE_MAGIC				"TLCF"
 #define CONFIG_FILE_VERSION				1
 
+#ifdef ESP32
+#define TAG "config"
+#define NVS_NAMESPACE "tamagotchi"
+#else
 static uint8_t config_buf[CONFIG_FILE_SIZE];
+#endif
 
 
 void config_save(config_t *cfg)
 {
+#ifdef ESP32
+	nvs_handle_t nvs_handle;
+	esp_err_t err;
+
+	err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+	if (err != ESP_OK) {
+		ESP_LOGE(TAG, "Failed to open NVS handle");
+		return;
+	}
+
+	err = nvs_set_blob(nvs_handle, "config", cfg, sizeof(config_t));
+	if (err != ESP_OK) {
+		ESP_LOGE(TAG, "Failed to save config to NVS");
+	} else {
+		err = nvs_commit(nvs_handle);
+		if (err != ESP_OK) {
+			ESP_LOGE(TAG, "Failed to commit NVS");
+		}
+	}
+
+	nvs_close(nvs_handle);
+#else
 	FIL f;
 	UINT num;
 	uint8_t *ptr = config_buf;
+#endif
 
+#ifndef ESP32
 	/* First the magic, then the version, and finally the fields of
 	 * the config_t struct written as u8 following the struct order
 	 */
@@ -82,10 +118,32 @@ void config_save(config_t *cfg)
 	}
 
 	f_close(&f);
+#endif
 }
 
 int8_t config_load(config_t *cfg)
 {
+#ifdef ESP32
+	nvs_handle_t nvs_handle;
+	esp_err_t err;
+	size_t required_size = sizeof(config_t);
+
+	err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
+	if (err != ESP_OK) {
+		ESP_LOGE(TAG, "Failed to open NVS handle");
+		return -1;
+	}
+
+	err = nvs_get_blob(nvs_handle, "config", cfg, &required_size);
+	nvs_close(nvs_handle);
+
+	if (err != ESP_OK || required_size != sizeof(config_t)) {
+		ESP_LOGW(TAG, "Config not found in NVS, using defaults");
+		return -1;
+	}
+
+	return 0;
+#else
 	FIL f;
 	UINT num;
 	uint8_t *ptr = config_buf;
@@ -140,4 +198,5 @@ int8_t config_load(config_t *cfg)
 	ptr += 1;
 
 	return 0;
+#endif
 }
