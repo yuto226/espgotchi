@@ -19,6 +19,14 @@
  */
 #include <stdint.h>
 
+#ifdef ESP32
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_timer.h"
+#include "rom/ets_sys.h"
+#endif
+
 #include "time.h"
 #include "spi.h"
 #include "gpio.h"
@@ -29,6 +37,27 @@ void ssd1306_init(void)
 {
 	spi_init();
 
+#ifdef ESP32
+	gpio_config_t io_conf = {};
+	io_conf.intr_type = GPIO_INTR_DISABLE;
+	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.pin_bit_mask = (1ULL << BOARD_SCREEN_DC_PIN) | 
+						   (1ULL << BOARD_SCREEN_RST_PIN);
+	io_conf.pull_down_en = 0;
+	io_conf.pull_up_en = 0;
+	gpio_config(&io_conf);
+
+	gpio_set_level(BOARD_SCREEN_DC_PIN, 0);
+	gpio_set_level(BOARD_SCREEN_RST_PIN, 0);
+	vTaskDelay(pdMS_TO_TICKS(1));
+	gpio_set_level(BOARD_SCREEN_RST_PIN, 1);
+	vTaskDelay(pdMS_TO_TICKS(1));
+	gpio_set_level(BOARD_SCREEN_RST_PIN, 0);
+	vTaskDelay(pdMS_TO_TICKS(1));
+	gpio_set_level(BOARD_SCREEN_RST_PIN, 1);
+	gpio_set_level(BOARD_SCREEN_DC_PIN, 1);
+	vTaskDelay(pdMS_TO_TICKS(10));
+#else
 	/* Power-up sequence */
 	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
@@ -42,6 +71,7 @@ void ssd1306_init(void)
 	gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 	time_delay(MS_TO_MCU_TIME(10));
+#endif
 
 	/* Configuration */
 	ssd1306_send_cmd_2b(REG_MUX_RATIO, 0x3F);
@@ -87,6 +117,11 @@ void ssd1306_set_power_mode(pwr_mode_t mode)
 
 void ssd1306_send_cmd_1b(uint8_t reg, uint8_t data)
 {
+#ifdef ESP32
+	gpio_set_level(BOARD_SCREEN_DC_PIN, 0);
+	spi_write(reg | data);
+	ets_delay_us(1);
+#else
 	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 
@@ -94,10 +129,17 @@ void ssd1306_send_cmd_1b(uint8_t reg, uint8_t data)
 	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+#endif
 }
 
 void ssd1306_send_cmd_2b(uint8_t reg, uint8_t data)
 {
+#ifdef ESP32
+	gpio_set_level(BOARD_SCREEN_DC_PIN, 0);
+	spi_write(reg);
+	spi_write(data);
+	ets_delay_us(1);
+#else
 	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 
@@ -106,10 +148,18 @@ void ssd1306_send_cmd_2b(uint8_t reg, uint8_t data)
 	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+#endif
 }
 
 void ssd1306_send_cmd_3b(uint8_t reg, uint8_t data1, uint8_t data2)
 {
+#ifdef ESP32
+	gpio_set_level(BOARD_SCREEN_DC_PIN, 0);
+	spi_write(reg);
+	spi_write(data1);
+	spi_write(data2);
+	ets_delay_us(1);
+#else
 	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 
@@ -119,12 +169,20 @@ void ssd1306_send_cmd_3b(uint8_t reg, uint8_t data1, uint8_t data2)
 	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+#endif
 }
 
 void ssd1306_send_data(uint8_t *data, uint16_t length)
 {
 	uint16_t i;
 
+#ifdef ESP32
+	gpio_set_level(BOARD_SCREEN_DC_PIN, 1);
+	for (i = 0; i < length; i++) {
+		spi_write(data[i]);
+	}
+	ets_delay_us(1);
+#else
 	gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 
@@ -134,4 +192,5 @@ void ssd1306_send_data(uint8_t *data, uint16_t length)
 	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+#endif
 }
