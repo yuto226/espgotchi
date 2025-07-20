@@ -45,6 +45,8 @@ static __attribute__((used, section(".rom"))) const u12_t g_program[];
 #define TAG "rom"
 static char rom_file_name[] = "/spiffs/romX.bin";
 
+static volatile u12_t *program = NULL;
+
 
 int8_t rom_load(uint8_t slot)
 {
@@ -84,6 +86,8 @@ int8_t rom_load(uint8_t slot)
 		return -1;
 	}
 
+	ESP_LOGI(TAG, "Success to open ROM file: %s", rom_file_name);
+
 	fseek(f, 0, SEEK_END);
 	size = ftell(f) / 2;
 	fseek(f, 0, SEEK_SET);
@@ -107,10 +111,23 @@ int8_t rom_load(uint8_t slot)
 		}
 	}
 
+	// ROMデータを保存する
+	program = malloc(size);
+    if (!program) {
+        fclose(f);
+		ESP_LOGE(TAG, "Failed to Load ROM data with malloc.");
+        return -1;
+    }
+
 	fclose(f);
 #endif
 
+	ESP_LOGI(TAG, "Success!! Loaded Rom Data.");
 	return 0;
+}
+
+const volatile u12_t *rom_get_program(void) {
+    return program;
 }
 
 int8_t rom_unload(uint8_t slot)

@@ -42,6 +42,7 @@ static bool ssd1306_detect_i2c_address(void)
 #ifdef BOARD_SSD1306_I2C
 	if (i2c_device_detect(SSD1306_I2C_ADDR_DEFAULT)) {
 		ssd1306_i2c_addr = SSD1306_I2C_ADDR_DEFAULT;
+		
 		return true;
 	}
 	if (i2c_device_detect(SSD1306_I2C_ADDR_ALT)) {

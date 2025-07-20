@@ -95,7 +95,7 @@
 
 #define AUTOSAVE_SLOT					0
 
-static volatile u12_t *g_program = (volatile u12_t *) (STORAGE_BASE_ADDRESS + (STORAGE_ROM_OFFSET << 2));
+static volatile u12_t *g_program = NULL;
 
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
@@ -1279,7 +1279,7 @@ int main(void)
 	}
 
 	/* Try to load the default ROM from the filesystem if it is not loaded */
-	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {
+	if (rom_load(DEFAULT_ROM_SLOT) < 0) {
 		job_schedule(&autooff_job, &autooff_job_fn, time_get() + MS_TO_MCU_TIME(AUTOOFF_PERIOD));
 
 		rom_loaded = 0;
@@ -1290,6 +1290,8 @@ int main(void)
 		while (((MCU_TIME_FREQ_X1000 << time_shift) < TAMALIB_FREQ * 1000) || (MCU_TIME_FREQ_X1000 << time_shift) % 1000) {
 			time_shift++;
 		}
+
+		g_program = rom_get_program();
 
 		if (tamalib_init((const u12_t *) g_program, NULL, (MCU_TIME_FREQ_X1000 << time_shift)/1000)) {
 			system_fatal_error();

@@ -23,12 +23,15 @@
 #include <stdint.h>
 
 #define ROM_SLOTS_NUM					4
-#define DEFAULT_ROM_SLOT				0
+#define DEFAULT_ROM_SLOT		        0
 
+typedef uint16_t u12_t;
 
 int8_t rom_load(uint8_t slot);
 int8_t rom_unload(uint8_t slot);
 uint8_t rom_is_slot_valid(uint8_t slot);
 uint8_t rom_is_loaded(void);
+// ROMデータのポインタを返す
+const volatile u12_t *rom_get_program(void);
 
 #endif /* _ROM_H_ */
