@@ -28,8 +28,12 @@ void esp32_display_gpio_init(void)
 	
 	io_conf.intr_type = GPIO_INTR_DISABLE;
 	io_conf.mode = GPIO_MODE_OUTPUT;
+#ifdef BOARD_SSD1306_I2C
+	io_conf.pin_bit_mask = (1ULL << BOARD_SCREEN_RST_PIN);
+#else
 	io_conf.pin_bit_mask = (1ULL << BOARD_SCREEN_DC_PIN) | 
 						   (1ULL << BOARD_SCREEN_RST_PIN);
+#endif
 	io_conf.pull_down_en = 0;
 	io_conf.pull_up_en = 0;
 	gpio_config(&io_conf);

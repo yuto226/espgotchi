@@ -141,12 +141,7 @@ void board_init(void)
     gpio_set_pull_mode(BOARD_RIGHT_BTN_PIN, GPIO_PULLUP_ONLY);
     
     /* Screen control pins */
-    gpio_set_direction(BOARD_SCREEN_DC_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_level(BOARD_SCREEN_DC_PIN, 1);  // 初期値HIGH
-    
-    gpio_set_direction(BOARD_SCREEN_NSS_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_level(BOARD_SCREEN_NSS_PIN, 1);  // SPI CS初期値HIGH
-    
+    // Reset pin for SSD1306 I2C mode
     gpio_set_direction(BOARD_SCREEN_RST_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(BOARD_SCREEN_RST_PIN, 1);  // リセット初期値HIGH
     
@@ -176,6 +171,7 @@ void board_init(void)
     gpio_set_pull_mode(BOARD_USB_DM_PIN, GPIO_FLOATING);
     
     // 注意: SPIピン（SCLK, MOSI）はSPIドライバが管理するため、ここでは設定しない
+    // 注意: I2Cピン（SCL, SDA）はI2Cドライバが管理するため、ここでは設定しない
     // 注意: バックライトピンはLEDCドライバが管理するため、ここでは設定しない
 }
 

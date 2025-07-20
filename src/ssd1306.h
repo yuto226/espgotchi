@@ -22,6 +22,11 @@
 
 #include <stdint.h>
 
+#define SSD1306_I2C_ADDR_DEFAULT		0x3C
+#define SSD1306_I2C_ADDR_ALT			0x3D
+
+extern uint8_t ssd1306_i2c_addr;
+
 #define REG_CONTRAST					0x81
 #define REG_DISP_ON					0xA4
 #define REG_DISP_MODE					0xA6

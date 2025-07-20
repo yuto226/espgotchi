@@ -9,7 +9,7 @@ idf_component_register(SRCS "esp32_main.c"
                              "../src/job.c"
                              "../src/mcu/esp32/gpio.c"
                              "../src/mcu/esp32/input.c"
-                             "../src/mcu/esp32/spi.c"
+                             "../src/mcu/esp32/i2c.c"
                              "../src/mcu/esp32/time.c"
                              "../src/mcu/esp32/speaker.c"
                              "../src/mcu/esp32/battery.c"
@@ -23,5 +23,5 @@ idf_component_register(SRCS "esp32_main.c"
                     INCLUDE_DIRS "../src"
                                  "../src/mcu/inc"
                                  "../src/mcu/esp32"
-                    REQUIRES spiffs nvs_flash esp_adc tamalib esp_timer
-                             esp_driver_gpio esp_driver_ledc esp_driver_spi)
+                    REQUIRES spiffs nvs_flash esp_adc tamalib esp_timer esp_pm
+                             esp_driver_gpio esp_driver_ledc esp_driver_i2c)
