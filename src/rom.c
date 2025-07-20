@@ -29,7 +29,7 @@
 #include "tamalib.h"
 
 /* Define this to include the ROM data at build time */
-//#define ROM_BUILT_IN
+// #define ROM_BUILT_IN
 
 #ifdef ROM_BUILT_IN
 static __attribute__((used, section(".rom"))) const u12_t g_program[];

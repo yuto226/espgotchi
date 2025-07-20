@@ -43,6 +43,11 @@ static int8_t storage_init(void)
 	};
 
 	esp_err_t ret = esp_vfs_spiffs_register(&conf);
+	if (ret == ESP_ERR_INVALID_STATE) {
+    	ESP_LOGW(TAG, "SPIFFS already mounted");
+    	spiffs_initialized = true;
+    	return 0;
+	}
 	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
 		return -1;
