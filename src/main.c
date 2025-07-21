@@ -1014,8 +1014,6 @@ static void autosave_job_fn(job_t *job)
 
 static void render_job_fn(job_t *job)
 {
-	ESP_LOGI("render_job_fn", "enter fn");
-
 	job_schedule(&render_job, &render_job_fn, time_get() + MS_TO_MCU_TIME(1000)/FRAMERATE);
 
 	if (menu_is_visible()) {
@@ -1042,7 +1040,6 @@ static void render_job_fn(job_t *job)
 	}
 
 	gfx_print_screen();
-	ESP_LOGI("render_job_fn", "exit fn");
 }
 
 static void cpu_job_fn(job_t *job)
