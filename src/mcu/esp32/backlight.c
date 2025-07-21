@@ -53,8 +53,9 @@ void backlight_init(void)
 
 void backlight_set_level(uint8_t level)
 {
-	ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_BL, LEDC_CHANNEL_BL, level));
-	ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_BL, LEDC_CHANNEL_BL));
+	// TODO: 後ほど必要であれば
+	// ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_BL, LEDC_CHANNEL_BL, level));
+	// ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_BL, LEDC_CHANNEL_BL));
 }
 
 void backlight_set(uint8_t v)

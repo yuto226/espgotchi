@@ -75,12 +75,13 @@ void led_init(void)
 
 void led_set(uint8_t r, uint8_t g, uint8_t b)
 {
-	ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_LED, LEDC_CH_RED, r));
-	ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_LED, LEDC_CH_RED));
+	// TODO: 後ほど必要であれば
+	// ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_LED, LEDC_CH_RED, r));
+	// ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_LED, LEDC_CH_RED));
 
-	ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_LED, LEDC_CH_GREEN, g));
-	ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_LED, LEDC_CH_GREEN));
+	// ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_LED, LEDC_CH_GREEN, g));
+	// ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_LED, LEDC_CH_GREEN));
 
-	ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_LED, LEDC_CH_BLUE, b));
-	ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_LED, LEDC_CH_BLUE));
+	// ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE_LED, LEDC_CH_BLUE, b));
+	// ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE_LED, LEDC_CH_BLUE));
 }

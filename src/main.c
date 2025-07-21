@@ -130,8 +130,8 @@ static config_t config = {
 	.lcd_inverted = 0,
 	.backlight_always_on = 0,
 	.backlight_level = 2,
-	.speaker_enabled = 1,
-	.led_enabled = 1,
+	.speaker_enabled = 0,
+	.led_enabled = 0,
 	.battery_enabled = 0,
 	.autosave_enabled = 1,
 };
@@ -229,7 +229,6 @@ static void update_led(void)
 	uint8_t r = 0, g = 0, b = 0;
 
 	if (!config.led_enabled) {
-		led_set(0, 0, 0);
 		return;
 	}
 
@@ -319,7 +318,8 @@ static void hal_set_lcd_icon(u8_t icon, bool_t val)
 
 static void hal_set_frequency(u32_t freq)
 {
-	speaker_set_frequency(freq);
+	// TODO: 後ほど考える
+	// speaker_set_frequency(freq);
 }
 
 static void hal_play_frequency(bool_t en)
@@ -976,13 +976,13 @@ static void ll_init(void)
 
 	time_init();
 
-	led_init();
+	// led_init();
 
 	backlight_init();
 
 	speaker_init();
 
-	battery_init();
+	// battery_init();
 
 	/* Wait a little bit to make sure all I/Os are stable */
 	time_delay(MS_TO_MCU_TIME(10));
@@ -1256,6 +1256,7 @@ void u8g2_init(void) {
     u8g2_InitDisplay(&u8g2);
     u8g2_SetPowerSave(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
+	u8g2_SetFont(&u8g2, u8g2_font_ncenB08_tr);    // フォント設定
     u8g2_DrawStr(&u8g2, 0, 24, "Hello ESP32!");
     u8g2_SendBuffer(&u8g2);
 }
@@ -1265,9 +1266,6 @@ int main(void)
 	ll_init();
 
 	u8g2_init();
-
-	/* Make sure the RGB LED is off */
-	led_set(0, 0, 0);
 
 	/* Clear any remaining data in RAM */
 	gfx_clear();
