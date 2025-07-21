@@ -96,29 +96,11 @@ void input_init(void)
 	inputs[INPUT_BTN_RIGHT].state = get_input_hw_state(INPUT_BTN_RIGHT);
 	inputs[INPUT_BTN_RIGHT].long_press_enabled = 1;
 
-#ifdef BOARD_NCHARGE_PIN
-	inputs[INPUT_BATTERY_CHARGING].pin = BOARD_NCHARGE_PIN;
-	inputs[INPUT_BATTERY_CHARGING].state = get_input_hw_state(INPUT_BATTERY_CHARGING);
-	inputs[INPUT_BATTERY_CHARGING].long_press_enabled = 0;
-#endif
-
-#ifdef BOARD_VBUS_SENSE_PIN
-	inputs[INPUT_VBUS_SENSING].pin = BOARD_VBUS_SENSE_PIN;
-	inputs[INPUT_VBUS_SENSING].state = get_input_hw_state(INPUT_VBUS_SENSING);
-	inputs[INPUT_VBUS_SENSING].long_press_enabled = 0;
-#endif
-
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask = (1ULL << BOARD_LEFT_BTN_PIN) | 
 						   (1ULL << BOARD_MIDDLE_BTN_PIN) | 
 						   (1ULL << BOARD_RIGHT_BTN_PIN);
-#ifdef BOARD_NCHARGE_PIN
-	io_conf.pin_bit_mask |= (1ULL << BOARD_NCHARGE_PIN);
-#endif
-#ifdef BOARD_VBUS_SENSE_PIN
-	io_conf.pin_bit_mask |= (1ULL << BOARD_VBUS_SENSE_PIN);
-#endif
 	io_conf.pull_down_en = 0;
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
@@ -130,12 +112,6 @@ void input_init(void)
 	gpio_isr_handler_add(BOARD_LEFT_BTN_PIN, gpio_isr_handler, (void*) BOARD_LEFT_BTN_PIN);
 	gpio_isr_handler_add(BOARD_MIDDLE_BTN_PIN, gpio_isr_handler, (void*) BOARD_MIDDLE_BTN_PIN);
 	gpio_isr_handler_add(BOARD_RIGHT_BTN_PIN, gpio_isr_handler, (void*) BOARD_RIGHT_BTN_PIN);
-#ifdef BOARD_NCHARGE_PIN
-	gpio_isr_handler_add(BOARD_NCHARGE_PIN, gpio_isr_handler, (void*) BOARD_NCHARGE_PIN);
-#endif
-#ifdef BOARD_VBUS_SENSE_PIN
-	gpio_isr_handler_add(BOARD_VBUS_SENSE_PIN, gpio_isr_handler, (void*) BOARD_VBUS_SENSE_PIN);
-#endif
 }
 
 input_state_t input_get_state(input_t input)

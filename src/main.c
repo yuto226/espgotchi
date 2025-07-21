@@ -35,11 +35,6 @@
 #include "rom.h"
 #include "config.h"
 #include "board.h"
-#if defined(BOARD_HAS_SSD1306)
-#include "ssd1306.h"
-#elif defined(BOARD_HAS_UC1701X)
-#include "uc1701x.h"
-#endif
 
 #include "u8g2.h"
 
@@ -988,20 +983,6 @@ static void ll_init(void)
 	speaker_init();
 
 	battery_init();
-
-#if defined(BOARD_HAS_SSD1306)
-	// ssd1306_init();
-	// ssd1306_set_power_mode(PWR_MODE_ON);
-	// ssd1306_set_display_mode(DISP_MODE_NORMAL);
-
-	// gfx_register_display(&ssd1306_send_data);
-#elif defined(BOARD_HAS_UC1701X)
-	uc1701x_init();
-	uc1701x_set_power_mode(PWR_MODE_ON);
-	uc1701x_set_display_mode(DISP_MODE_NORMAL);
-
-	gfx_register_display(&uc1701x_send_data);
-#endif
 
 	/* Wait a little bit to make sure all I/Os are stable */
 	time_delay(MS_TO_MCU_TIME(10));

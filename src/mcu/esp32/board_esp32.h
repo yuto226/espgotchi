@@ -20,7 +20,6 @@
 #ifndef _BOARD_DEF_H_
 #define _BOARD_DEF_H_
 
-#define BOARD_HAS_SSD1306
 #define BOARD_SSD1306_I2C
 
 #define BOARD_SCREEN_I2C_NUM		I2C_NUM_0

@@ -47,7 +47,7 @@ uint8_t u8x8_byte_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_p
 
     switch (msg) {
         case U8X8_MSG_BYTE_INIT:
-            i2c_master_hw_init(u8x8->i2c_address);
+            i2c_master_hw_init(0x3C);
             break;
 
         case U8X8_MSG_BYTE_START_TRANSFER:
