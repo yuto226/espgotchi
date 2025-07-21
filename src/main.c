@@ -35,6 +35,7 @@
 #include "rom.h"
 #include "config.h"
 #include "board.h"
+#include "esp_log.h"
 
 #include "u8g2.h"
 
@@ -1013,6 +1014,8 @@ static void autosave_job_fn(job_t *job)
 
 static void render_job_fn(job_t *job)
 {
+	ESP_LOGI("render_job_fn", "enter fn");
+
 	job_schedule(&render_job, &render_job_fn, time_get() + MS_TO_MCU_TIME(1000)/FRAMERATE);
 
 	if (menu_is_visible()) {
@@ -1039,6 +1042,7 @@ static void render_job_fn(job_t *job)
 	}
 
 	gfx_print_screen();
+	ESP_LOGI("render_job_fn", "exit fn");
 }
 
 static void cpu_job_fn(job_t *job)
@@ -1066,7 +1070,8 @@ static void battery_job_fn(job_t *job)
 {
 	job_schedule(&battery_job, &battery_job_fn, time_get() + MS_TO_MCU_TIME(BATTERY_JOB_PERIOD));
 
-	battery_start_meas();
+	 // TODO: ここが原因で動かない。一旦コメントアウト
+	// battery_start_meas();
 }
 
 static void battery_cb(uint16_t v)
@@ -1320,11 +1325,13 @@ int main(void)
 	menu_register(main_menu);
 
 	job_schedule(&render_job, &render_job_fn, JOB_ASAP);
-	job_schedule(&battery_job, &battery_job_fn, JOB_ASAP);
+	// TODO: ここが原因で動かない。一旦処理を実行させない
+	// job_schedule(&battery_job, &battery_job_fn, time_get() + MS_TO_MCU_TIME(1000));
 
 	job_mainloop();
 
 	tamalib_release();
 
+	ESP_LOGI("main loop", "finish process");
 	fs_ll_umount();
 }

@@ -22,6 +22,7 @@
 #include "time.h"
 #include "system.h"
 #include "job.h"
+#include "esp_log.h"
 
 static job_t *jobs = NULL;
 
@@ -80,6 +81,8 @@ void job_mainloop(void)
 	job_t *j = NULL;
 	exec_state_t state;
 
+	ESP_LOGI("job_mainloop", "enter");
+
 	while (1) {
 		/* Disable IRQs handling */
 		system_disable_irq();
@@ -112,4 +115,5 @@ void job_mainloop(void)
 			j = NULL;
 		}
 	}
+	ESP_LOGI("main loop", "exit");
 }
