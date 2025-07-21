@@ -76,7 +76,7 @@
 #define BATTERY_THICKNESS				2
 #define BATTERY_LVL_THICKNESS				2
 
-#define FRAMERATE 					30
+#define FRAMERATE 					10
 
 #define TAMALIB_FREQ					32768 // Hz
 
@@ -1040,8 +1040,8 @@ static void render_job_fn(job_t *job)
 		draw_battery_full(BATTERY_ON_X, BATTERY_ON_Y);
 	}
 
-	gfx_print_screen();
-}
+		gfx_print_screen();
+	}
 
 static void cpu_job_fn(job_t *job)
 {
@@ -1302,8 +1302,10 @@ int main(void)
 		g_program = rom_get_program();
 
 		if (tamalib_init((const u12_t *) g_program, NULL, (MCU_TIME_FREQ_X1000 << time_shift)/1000)) {
+			ESP_LOGE("main", "TamaLIB initialization failed!");
 			system_fatal_error();
 		}
+		ESP_LOGI("main", "TamaLIB initialized successfully");
 
 		if (config.autosave_enabled) {
 			/* Try to load the autosave slot and schedule the next autosave */

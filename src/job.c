@@ -23,6 +23,7 @@
 #include "system.h"
 #include "job.h"
 #include "esp_log.h"
+#include "tamalib.h"
 
 static job_t *jobs = NULL;
 
@@ -86,6 +87,7 @@ void job_mainloop(void)
 	while (1) {
 		/* Disable IRQs handling */
 		system_disable_irq();
+		tamalib_refresh_hw();
 
 		if (jobs != NULL) {
 			if (jobs->time == JOB_ASAP) {

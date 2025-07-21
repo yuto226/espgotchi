@@ -92,32 +92,30 @@ int8_t rom_load(uint8_t slot)
 	size = ftell(f) / 2;
 	fseek(f, 0, SEEK_SET);
 
-	// while (i < size) {
-	// 	if (fread(buf, 1, 2, f) != 2) {
-	// 		ESP_LOGE(TAG, "Failed to read ROM data");
-	// 		fclose(f);
-	// 		return -1;
-	// 	}
-
-	// 	steps[i % PAGE_SIZE_U12] = buf[1] | ((buf[0] & 0xF) << 8);
-	// 	i++;
-
-	// 	if ((i % PAGE_SIZE_U12) == 0 || i == size) {
-	// 		if (storage_write(STORAGE_ROM_OFFSET + ((i - 1)/PAGE_SIZE_U12) * STORAGE_PAGE_SIZE, (uint32_t *) steps, ((((i - 1) % PAGE_SIZE_U12) + 1) * sizeof(u12_t) + sizeof(uint32_t) - 1)/sizeof(uint32_t)) < 0) {
-	// 			ESP_LOGE(TAG, "Failed to write ROM data to storage");
-	// 			fclose(f);
-	// 			return -1;
-	// 		}
-	// 	}
-	// }
-
-	// ROMデータを保存する
-	program = malloc(size);
+	// ROMデータを直接メモリに読み込み
+	program = malloc(size * sizeof(u12_t));
     if (!program) {
         fclose(f);
 		ESP_LOGE(TAG, "Failed to Load ROM data with malloc.");
         return -1;
     }
+
+	// ファイルを先頭に戻す
+	fseek(f, 0, SEEK_SET);
+	
+	while (i < size) {
+		if (fread(buf, 1, 2, f) != 2) {
+			ESP_LOGE(TAG, "Failed to read ROM data");
+			free(program);
+			program = NULL;
+			fclose(f);
+			return -1;
+		}
+
+		// u12_t形式でプログラムメモリに直接格納
+		program[i] = buf[1] | ((buf[0] & 0xF) << 8);
+		i++;
+	}
 
 	fclose(f);
 #endif
