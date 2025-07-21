@@ -1020,6 +1020,7 @@ static void render_job_fn(job_t *job)
 		return;
 	}
 
+	tamalib_refresh_hw();
 	gfx_clear();
 
 	if (!rom_loaded) {
