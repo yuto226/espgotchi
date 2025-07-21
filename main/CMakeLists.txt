@@ -20,8 +20,11 @@ idf_component_register(SRCS "esp32_main.c"
                              "../src/mcu/esp32/usb.c"
                              "../src/mcu/esp32/fs_ll.c"
                              "../src/mcu/esp32/display_init.c"
+                             "../src/mcu/esp32/u8x8_byte_esp32_hw_i2c.c"
+                             "../src/mcu/esp32/u8x8_gpio_and_delay_esp32.c"
                     INCLUDE_DIRS "../src"
                                  "../src/mcu/inc"
                                  "../src/mcu/esp32"
                     REQUIRES spiffs nvs_flash esp_adc tamalib esp_timer esp_pm
-                             esp_driver_gpio esp_driver_ledc esp_driver_i2c)
+                             esp_driver_gpio esp_driver_ledc esp_driver_i2c u8g2
+                             driver)

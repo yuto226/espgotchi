@@ -41,6 +41,8 @@
 #include "uc1701x.h"
 #endif
 
+#include "u8g2.h"
+
 #include "tamalib.h"
 
 #define FIRMWARE_VERSION				"v0.1"
@@ -121,6 +123,12 @@ static bool_t is_charging = 0;
 static bool_t is_calling = 0;
 static bool_t is_vbus = 0;
 static uint16_t current_battery = BATTERY_MAX;
+
+// SSD1306の描画系ライブラリ
+extern uint8_t u8x8_byte_hw_i2c(u8x8_t *, uint8_t, uint8_t, void *);
+extern uint8_t u8x8_gpio_and_delay_esp32(u8x8_t *, uint8_t, uint8_t, void *);
+
+u8g2_t u8g2;
 
 /* Default config values */
 static config_t config = {
@@ -982,11 +990,11 @@ static void ll_init(void)
 	battery_init();
 
 #if defined(BOARD_HAS_SSD1306)
-	ssd1306_init();
-	ssd1306_set_power_mode(PWR_MODE_ON);
-	ssd1306_set_display_mode(DISP_MODE_NORMAL);
+	// ssd1306_init();
+	// ssd1306_set_power_mode(PWR_MODE_ON);
+	// ssd1306_set_display_mode(DISP_MODE_NORMAL);
 
-	gfx_register_display(&ssd1306_send_data);
+	// gfx_register_display(&ssd1306_send_data);
 #elif defined(BOARD_HAS_UC1701X)
 	uc1701x_init();
 	uc1701x_set_power_mode(PWR_MODE_ON);
@@ -1255,9 +1263,27 @@ static void states_init(void)
 	vbus_sensing_handler(input_get_state(INPUT_VBUS_SENSING));
 }
 
+void u8g2_init(void) {
+    // SSD1306 128x64 I2C用初期化
+    u8g2_Setup_ssd1306_i2c_128x64_noname_f(
+        &u8g2, U8G2_R0,
+        u8x8_byte_hw_i2c, u8x8_gpio_and_delay_esp32
+    );
+
+    u8g2_SetI2CAddress(&u8g2, 0x78); // SSD1306のI2Cアドレス（0x3C<<1）
+
+    u8g2_InitDisplay(&u8g2);
+    u8g2_SetPowerSave(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_DrawStr(&u8g2, 0, 24, "Hello ESP32!");
+    u8g2_SendBuffer(&u8g2);
+}
+
 int main(void)
 {
 	ll_init();
+
+	u8g2_init();
 
 	/* Make sure the RGB LED is off */
 	led_set(0, 0, 0);
