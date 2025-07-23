@@ -177,9 +177,6 @@ void board_init(void)
 
 void board_init_irq(void)
 {
-    // 割り込みサービスをインストール
-    gpio_install_isr_service(0);
-
     // --- ボタン GPIO (既存のピン定義を使用) ---
     gpio_set_direction(BOARD_LEFT_BTN_PIN, GPIO_MODE_INPUT);
     gpio_set_pull_mode(BOARD_LEFT_BTN_PIN, GPIO_PULLUP_ONLY);
