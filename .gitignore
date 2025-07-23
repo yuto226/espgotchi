@@ -5,3 +5,6 @@
 *.map
 .DS_Store
 build/*
+.esphome/*
+espgotchi.yaml
+fonts/*
