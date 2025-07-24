@@ -9,7 +9,7 @@
 #define I2C_MASTER_SDA_IO     26
 #define I2C_MASTER_SCL_IO     25
 #define I2C_MASTER_FREQ_HZ    400000
-#define I2C_TIMEOUT_MS        1000
+#define I2C_TIMEOUT_MS        2000
 
 static const char *TAG = "u8x8_hw_i2c";
 
@@ -65,7 +65,7 @@ uint8_t u8x8_byte_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_p
             break;
 
         case U8X8_MSG_BYTE_END_TRANSFER: {
-            esp_err_t err = i2c_master_transmit(i2c_dev, buffer, buffer_pos, pdMS_TO_TICKS(1000));
+            esp_err_t err = i2c_master_transmit(i2c_dev, buffer, buffer_pos, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
             if (err != ESP_OK) {
                 ESP_LOGE(TAG, "I2C transmit failed: %s", esp_err_to_name(err));
                 return 0;
